@@ -38,7 +38,7 @@ window.FUMEHOOD_CONFIG = {
    * See README.md → "Shared bookings" for the 5-minute Supabase setup.
    */
   supabase: {
-    url: '',      // e.g. 'https://abcdefghijkl.supabase.co'
-    anonKey: '',  // the project's public "anon" key
+    url: 'https://wmiquhcxnicsowbmvfkf.supabase.co',
+    anonKey: 'sb_publishable_DDMuOi2pd8H5811ZJTEITA_8r_TuTGp',
   },
 };
