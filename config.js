@@ -13,7 +13,7 @@ window.FUMEHOOD_CONFIG = {
   // Generate a new one with:
   //   printf 'your-new-password' | shasum -a 256
   // and paste the hex string here (no trailing spaces).
-  passwordHash: '24e3f53addb0b4787a8c793e95f0e640df6954f4573dc54dd44124c9f350efcc',
+  passwordHash: '02da0ef15124fd1c6c706b6bc181f973c0c3c9241ff386d44c03d286a6fdb047',
 
   // Bookable window, in whole hours (24 h clock). 7 → 19 means the first
   // slot is 07:00–08:00 and the last is 18:00–19:00.
