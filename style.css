@@ -38,6 +38,9 @@
 
 * { box-sizing: border-box; }
 
+/* Author `display` rules would otherwise beat the UA rule for [hidden]. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font: 15px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
