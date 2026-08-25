@@ -6,6 +6,22 @@ week view of hourly slots, click or drag to book.
 No build step, no framework — four static files, so it deploys straight to
 GitHub Pages.
 
+## Where it runs
+
+- **Live at** <https://gits-15.sys.kth.se/pages/uvogt/fume-hood-booking/>, served
+  by GitHub Pages on KTH's GitHub Enterprise instance.
+- That instance runs in private mode, so **visitors must be signed in to KTH
+  GitHub** before the page loads at all. Anonymous requests — including requests
+  for `config.js` — are redirected to the KTH login.
+- Bookings live in a Supabase project (`wmiquhcxnicsowbmvfkf`). To publish a
+  change: commit, `git push`, and Pages redeploys within a minute or two.
+
+A Supabase project on the free plan **pauses itself after about a week with no
+API requests**. In term time the lab's own bookings keep it awake; over a long
+holiday it may go to sleep, and the calendar will then fail to load until
+someone hits *Restore* in the Supabase dashboard. Nothing is lost when this
+happens.
+
 ## Try it locally
 
 ```bash
