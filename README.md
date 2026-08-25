@@ -56,6 +56,17 @@ names are grouped case-insensitively so "Uli" and "uli" are one person.
 Both pages share the same password, and unlocking one unlocks the other for
 that browser session.
 
+## Changing the CSS or JS
+
+Browsers cache `store.js`, `app.js` and the rest hard enough that a visitor can
+end up running a new page against an old script — which fails in confusing
+ways rather than cleanly. Every reference carries a `?v=N` stamp; bump it
+before committing a CSS or JS change:
+
+```bash
+./scripts/bump-version.sh
+```
+
 ## Configure it
 
 Everything you'd normally change is in [`config.js`](config.js): hood name,
@@ -130,3 +141,4 @@ foundation for it. Worth knowing before it grows.
 | [`style.css`](style.css) | Styling, including a dark mode |
 | [`supabase/schema.sql`](supabase/schema.sql) | Table and access policies for shared mode |
 | [`scripts/connect-supabase.sh`](scripts/connect-supabase.sh) | Connects the app to a Supabase project and verifies it |
+| [`scripts/bump-version.sh`](scripts/bump-version.sh) | Busts browser caches after a CSS/JS change |

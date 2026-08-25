@@ -278,12 +278,8 @@ input:focus-visible, button:focus-visible, select:focus-visible {
   font-weight: 600;
 }
 
-.report caption.empty {
-  caption-side: bottom;
-  text-align: left;
-  padding: 10px 0;
-  color: var(--muted);
-}
+button:disabled { opacity: 0.45; cursor: default; }
+button:disabled:hover { border-color: var(--line); color: var(--ink); }
 
 .hints { padding: 0 16px 24px; color: var(--muted); font-size: 13px; }
 .hints p { margin: 0; }

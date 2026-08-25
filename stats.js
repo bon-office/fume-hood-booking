@@ -122,13 +122,6 @@ function renderReport(table, buckets, headers, totals, names) {
   foot.appendChild(footRow);
 
   table.replaceChildren(head, body, foot);
-
-  if (!state.people.length) {
-    const p = document.createElement('caption');
-    p.className = 'empty';
-    p.textContent = 'No bookings yet.';
-    table.appendChild(p);
-  }
 }
 
 function renderYearTable(names) {
@@ -159,7 +152,9 @@ function renderSummary() {
     return;
   }
   const dates = state.rows.map((b) => b.date).sort();
-  const people = state.people.length;
+  // Counted from the rows, not from state.people, so this stays correct no
+  // matter what order the summary and the tables are built in.
+  const people = new Set(state.rows.map(keyOf)).size;
   el.textContent =
     `${state.rows.length} hours booked by ${people} ${people === 1 ? 'person' : 'people'}, ` +
     `between ${dates[0]} and ${dates[dates.length - 1]}.`;
@@ -205,6 +200,15 @@ async function start() {
     return;
   }
 
+  renderSummary();
+
+  if (!state.rows.length) {
+    // Nothing to tabulate: one message beats a summary plus two empty tables.
+    for (const section of document.querySelectorAll('.stats section')) section.hidden = true;
+    document.getElementById('csv-btn').disabled = true;
+    return;
+  }
+
   const names = displayNames(state.rows);
   const hoursPerPerson = tally(state.rows, () => 'all');
 
@@ -214,7 +218,6 @@ async function start() {
   });
   state.years = [...new Set(state.rows.map(yearOf))].sort();
 
-  renderSummary();
   renderYearTable(names);
 
   const select = document.getElementById('year-select');
