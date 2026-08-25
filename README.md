@@ -1,7 +1,7 @@
 # Fume hood booking
 
-A tiny booking calendar for a single fume hood. One shared lab password, a week
-view of hourly slots, click or drag to book.
+A tiny booking calendar for fume hood **C1:3042**. One shared lab password, a
+week view of hourly slots, click or drag to book.
 
 No build step, no framework — four static files, so it deploys straight to
 GitHub Pages.
@@ -12,7 +12,8 @@ GitHub Pages.
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000> and use the default password **`fumehood`**.
+Then open <http://localhost:8000> and enter the lab password. (The password
+itself is deliberately not written down in this repo — ask in the lab.)
 
 Opening `index.html` directly as a `file://` URL will not work: browsers block
 `crypto.subtle` (used to hash the password) outside a secure context. Any local
@@ -54,17 +55,19 @@ need one free external database. Supabase takes about five minutes:
 1. Create a free project at <https://supabase.com>.
 2. **SQL Editor → New query**, paste [`supabase/schema.sql`](supabase/schema.sql), run it.
 3. **Project Settings → API**, copy the *Project URL* and the *anon public* key.
-4. Put both into `config.js`:
+4. Hand both to the helper script, which writes them into `config.js` and
+   checks that the table can actually be read, written and deleted with that
+   key:
 
-   ```js
-   supabase: {
-     url: 'https://abcdefghijkl.supabase.co',
-     anonKey: 'eyJhbGciOi...',
-   },
+   ```bash
+   ./scripts/connect-supabase.sh https://abcdefghijkl.supabase.co eyJhbGciOi...
    ```
 
 5. Commit and push. The "Demo mode" badge disappears and everyone sees the same
    calendar, refreshed every 30 seconds.
+
+The anon key belongs in the repo — it is designed to be public, and the table
+policies in step 2 are what decide what it may do.
 
 Double-booking is prevented by the database itself (`unique (date, hour)`), not
 by the browser — so two people clicking the same slot at the same moment can't
@@ -78,6 +81,8 @@ both win.
   A determined person who has the page URL can bypass the prompt and reach the
   data directly.
 - The password stops casual passers-by and web crawlers. That's its whole job.
+  A short password's hash can be brute-forced offline in seconds by anyone who
+  reads `config.js`, so don't lean on it for more than that.
 - So: use a password you don't use anywhere else, keep the repo private if you
   prefer (Pages works on private repos with GitHub Team/Enterprise), and put
   nothing confidential in a booking name. First names are plenty.
@@ -96,3 +101,4 @@ foundation for it. Worth knowing before it grows.
 | [`app.js`](app.js) | Grid rendering, drag-to-select, booking and release |
 | [`style.css`](style.css) | Styling, including a dark mode |
 | [`supabase/schema.sql`](supabase/schema.sql) | Table and access policies for shared mode |
+| [`scripts/connect-supabase.sh`](scripts/connect-supabase.sh) | Connects the app to a Supabase project and verifies it |

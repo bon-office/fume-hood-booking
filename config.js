@@ -7,13 +7,13 @@
 window.FUMEHOOD_CONFIG = {
 
   // Shown in the header. Name your hood however the lab refers to it.
-  hoodName: 'Fume hood A',
+  hoodName: 'Fume hood C1:3042',
 
-  // SHA-256 hash of the shared password. The default below is "fumehood".
+  // SHA-256 hash of the shared password.
   // Generate a new one with:
   //   printf 'your-new-password' | shasum -a 256
   // and paste the hex string here (no trailing spaces).
-  passwordHash: '5a74b9e40d7f8a0ebf6f5895ea3821c718ed09db7844c1dbad6027f99c11c186',
+  passwordHash: '24e3f53addb0b4787a8c793e95f0e640df6954f4573dc54dd44124c9f350efcc',
 
   // Bookable window, in whole hours (24 h clock). 7 → 19 means the first
   // slot is 07:00–08:00 and the last is 18:00–19:00.
