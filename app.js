@@ -50,47 +50,6 @@ function tooFarAhead(date) {
   return date > iso(limit);
 }
 
-/* ---------- password gate ---------- */
-
-async function sha256Hex(text) {
-  const bytes = new TextEncoder().encode(text);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-function setupGate() {
-  const gate = document.getElementById('gate');
-  const form = document.getElementById('gate-form');
-  const input = document.getElementById('gate-input');
-  const error = document.getElementById('gate-error');
-  document.getElementById('gate-hood').textContent = CFG.hoodName;
-
-  const open = () => {
-    gate.hidden = true;
-    document.getElementById('app').hidden = false;
-    startApp();
-  };
-
-  if (sessionStorage.getItem('fumehood.unlocked') === CFG.passwordHash) {
-    open();
-    return;
-  }
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const hash = await sha256Hex(input.value);
-    if (hash === CFG.passwordHash) {
-      sessionStorage.setItem('fumehood.unlocked', hash);
-      open();
-    } else {
-      error.hidden = false;
-      input.select();
-    }
-  });
-
-  input.focus();
-}
-
 /* ---------- rendering ---------- */
 
 function visibleDays() {
@@ -427,10 +386,7 @@ function setupInteraction() {
     renderGrid();
   });
 
-  document.getElementById('lock-btn').addEventListener('click', () => {
-    sessionStorage.removeItem('fumehood.unlocked');
-    location.reload();
-  });
+  document.getElementById('lock-btn').addEventListener('click', lockAndReload);
 }
 
 /* ---------- boot ---------- */
@@ -458,4 +414,4 @@ function startApp() {
   }
 }
 
-setupGate();
+unlockThen(startApp);

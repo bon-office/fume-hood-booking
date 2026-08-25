@@ -61,7 +61,7 @@ button {
 
 button:hover { border-color: var(--accent); color: var(--accent); }
 
-input {
+input, select {
   font: inherit;
   color: var(--ink);
   background: var(--panel);
@@ -70,7 +70,9 @@ input {
   padding: 7px 10px;
 }
 
-input:focus-visible, button:focus-visible {
+select { padding: 4px 8px; }
+
+input:focus-visible, button:focus-visible, select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
@@ -219,6 +221,69 @@ input:focus-visible, button:focus-visible {
 }
 
 .modal-actions button.danger:hover { filter: brightness(1.08); color: #fff; }
+
+/* ---- links that look like buttons ---- */
+
+.linkbtn {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 7px 12px;
+  font-size: 15px;
+}
+
+.linkbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---- statistics ---- */
+
+.stats { padding: 16px; }
+.stats section { margin-bottom: 28px; }
+.stats h2 { font-size: 15px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+.summary { margin: 0 0 22px; color: var(--muted); }
+.summary.error { color: var(--error); }
+.table-scroll { overflow-x: auto; }
+
+.report {
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 100%;
+}
+
+.report th, .report td {
+  border-bottom: 1px solid var(--line);
+  padding: 7px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.report thead th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.report tbody th { font-weight: 500; }
+.report .num { text-align: right; font-variant-numeric: tabular-nums; }
+.report .zero { color: var(--muted); }
+.report .total { font-weight: 600; }
+.report tbody tr:hover { background: var(--free-hover); }
+
+.report tfoot th, .report tfoot td {
+  border-top: 2px solid var(--line);
+  border-bottom: none;
+  font-weight: 600;
+}
+
+.report caption.empty {
+  caption-side: bottom;
+  text-align: left;
+  padding: 10px 0;
+  color: var(--muted);
+}
 
 .hints { padding: 0 16px 24px; color: var(--muted); font-size: 13px; }
 .hints p { margin: 0; }

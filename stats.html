@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fume hood usage</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>&#129514;</text></svg>">
+</head>
+<body>
+
+  <div id="gate" class="gate">
+    <form id="gate-form" class="gate-card" autocomplete="off">
+      <h1 class="gate-title">🧪 <span id="gate-hood">Fume hood</span></h1>
+      <p class="gate-sub">Enter the lab password to see usage statistics.</p>
+      <input id="gate-input" type="password" placeholder="Password" aria-label="Lab password" required>
+      <button type="submit">Unlock</button>
+      <p id="gate-error" class="gate-error" hidden>Wrong password.</p>
+    </form>
+  </div>
+
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="hood-name">Fume hood</h1>
+        <span id="mode-badge" class="badge" hidden></span>
+      </div>
+      <div class="topbar-right">
+        <a class="ghost linkbtn" href="index.html">← Calendar</a>
+        <button id="csv-btn" class="ghost">Download CSV</button>
+        <button id="lock-btn" class="ghost" title="Lock and forget the password">Lock</button>
+      </div>
+    </header>
+
+    <main class="stats">
+      <p id="summary" class="summary">Loading…</p>
+
+      <section>
+        <h2>Hours per year</h2>
+        <div class="table-scroll"><table id="by-year" class="report"></table></div>
+      </section>
+
+      <section>
+        <h2>
+          Hours per month in
+          <select id="year-select" aria-label="Year"></select>
+        </h2>
+        <div class="table-scroll"><table id="by-month" class="report"></table></div>
+      </section>
+
+      <p class="hints">
+        One booked hour counts as one hour. Names are grouped case-insensitively,
+        so "Uli" and "uli" are the same person.
+      </p>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="store.js"></script>
+  <script src="gate.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>

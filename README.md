@@ -46,6 +46,16 @@ Then in the repository: **Settings → Pages → Source: Deploy from a branch �
 `main` / `/ (root)` → Save**. A minute later it is live at
 `https://<you>.github.io/fume-hood-booking/`.
 
+## Usage statistics
+
+The **Statistics** button in the calendar's header opens `stats.html`: hours
+booked per person per year, and per person per month for a chosen year, with a
+CSV download for anything further. One booked hour counts as one hour, and
+names are grouped case-insensitively so "Uli" and "uli" are one person.
+
+Both pages share the same password, and unlocking one unlocks the other for
+that browser session.
+
 ## Configure it
 
 Everything you'd normally change is in [`config.js`](config.js): hood name,
@@ -112,6 +122,8 @@ foundation for it. Worth knowing before it grows.
 | File | What it is |
 | --- | --- |
 | [`index.html`](index.html) | Page structure: password gate + calendar |
+| [`stats.html`](stats.html) / [`stats.js`](stats.js) | Usage statistics per person, per month and year |
+| [`gate.js`](gate.js) | The password gate, shared by both pages |
 | [`config.js`](config.js) | All settings — the only file you normally edit |
 | [`store.js`](store.js) | Storage layer: browser-local, or Supabase when configured |
 | [`app.js`](app.js) | Grid rendering, drag-to-select, booking and release |

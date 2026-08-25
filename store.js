@@ -4,6 +4,7 @@
  * Two interchangeable backends behind one interface:
  *
  *   list(fromDate, toDate) -> [{ id, date, hour, name }]
+ *   listAll()              -> every booking ever made, for the statistics
  *   create(rows)           -> creates bookings, throws Conflict if taken
  *   removeMany(ids)        -> deletes bookings, in one round trip
  *
@@ -31,6 +32,10 @@ const LocalStore = {
 
   async list(from, to) {
     return this._all().filter((b) => b.date >= from && b.date <= to);
+  },
+
+  async listAll() {
+    return this._all();
   },
 
   async create(rows) {
@@ -75,6 +80,20 @@ function makeSupabaseStore({ url, anonKey }) {
 
     list(from, to) {
       return call(`?select=id,date,hour,name&date=gte.${from}&date=lte.${to}`);
+    },
+
+    async listAll() {
+      // PostgREST caps a response at 1000 rows, so walk the table in pages
+      // rather than silently reporting statistics for only part of it.
+      const page = 1000;
+      const all = [];
+      for (let offset = 0; ; offset += page) {
+        const rows = await call(
+          `?select=id,date,hour,name&order=date.asc,hour.asc&limit=${page}&offset=${offset}`,
+        );
+        all.push(...rows);
+        if (rows.length < page) return all;
+      }
     },
 
     create(rows) {
