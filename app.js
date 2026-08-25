@@ -34,6 +34,10 @@ function hourLabel(h) {
   return `${String(h).padStart(2, '0')}:00`;
 }
 
+function sameName(a, b) {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 function isPast(date, hour) {
   const now = new Date();
   const slotEnd = new Date(`${date}T00:00:00`);
@@ -145,11 +149,12 @@ function renderGrid() {
       td.dataset.hour = h;
 
       if (booking) {
-        const mine = booking.name.trim().toLowerCase() === state.name.trim().toLowerCase();
+        const mine = sameName(booking.name, state.name);
         td.classList.add('booked', mine ? 'mine' : 'theirs');
         td.textContent = booking.name;
         td.title = `${hourLabel(h)}–${hourLabel(h + 1)} · ${booking.name}` +
           (mine || CFG.allowCancelOthers ? ' · click to release' : '');
+        td.dataset.name = booking.name;
         td.dataset.id = booking.id;
       } else if (isPast(date, h)) {
         td.classList.add('past');
@@ -222,38 +227,140 @@ async function book(date, fromHour, toHour) {
   }
 
   setStatus('Saving…');
+  let failure = null;
   try {
     await store.create(hours.map((h) => ({ date, hour: h, name })));
   } catch (err) {
+    failure = err;
+  }
+
+  // Report after reloading: reload() clears the status line on success, which
+  // would otherwise wipe the message and make a failure look like a no-op.
+  await reload();
+  if (failure) {
     setStatus(
-      err instanceof Conflict
-        ? 'Someone just took one of those hours — reloading.'
-        : `Could not save: ${err.message}`,
+      failure instanceof Conflict
+        ? 'Someone just took one of those hours — have another look.'
+        : `Could not save: ${failure.message}`,
       'error',
     );
   }
-  await reload();
+}
+
+/*
+ * The run of consecutive hours on one day belonging to one person, containing
+ * `hour`. A 09:00-13:00 drag is four separate rows in the database; this is
+ * what lets us treat them as the one booking the user thinks they made.
+ */
+function blockAround(date, hour, name) {
+  const at = (h) => {
+    const b = state.bookings.get(`${date}#${h}`);
+    return b && sameName(b.name, name) ? b : null;
+  };
+
+  let lo = hour;
+  let hi = hour;
+  while (at(lo - 1)) lo--;
+  while (at(hi + 1)) hi++;
+
+  const rows = [];
+  for (let h = lo; h <= hi; h++) rows.push(at(h));
+  return { lo, hi, rows };
+}
+
+function longDate(date) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+}
+
+/*
+ * Resolves to 'block', 'one' or 'cancel'.
+ *
+ * The buttons resolve on their own click rather than via the dialog's `close`
+ * event: not every engine fires `close` reliably, and a release that silently
+ * never happens is the worst possible failure here.
+ */
+function askRelease({ title, body, blockLabel, oneLabel }) {
+  return new Promise((resolve) => {
+    const dialog = document.getElementById('release-dialog');
+    const blockBtn = document.getElementById('release-block');
+    const oneBtn = document.getElementById('release-one');
+    const keepBtn = document.getElementById('release-keep');
+
+    document.getElementById('release-title').textContent = title;
+    document.getElementById('release-body').textContent = body;
+    blockBtn.textContent = blockLabel;
+    oneBtn.textContent = oneLabel || '';
+    oneBtn.hidden = !oneLabel;
+
+    let settled = false;
+    const listeners = [];
+
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      for (const [el, type, fn] of listeners) el.removeEventListener(type, fn);
+      if (dialog.open) dialog.close();
+      resolve(value);
+    };
+
+    const on = (el, type, fn) => {
+      listeners.push([el, type, fn]);
+      el.addEventListener(type, fn);
+    };
+
+    on(blockBtn, 'click', () => finish('block'));
+    on(oneBtn, 'click', () => finish('one'));
+    on(keepBtn, 'click', () => finish('cancel'));
+    on(dialog, 'cancel', () => finish('cancel')); // Escape
+    on(dialog, 'close', () => finish(dialog.returnValue || 'cancel'));
+
+    if (!dialog.open) dialog.showModal();
+    keepBtn.focus(); // Enter keeps the booking; releasing is always deliberate
+  });
 }
 
 async function cancel(td) {
-  const booking = state.bookings.get(`${td.dataset.date}#${td.dataset.hour}`);
+  const date = td.dataset.date;
+  const hour = Number(td.dataset.hour);
+  const booking = state.bookings.get(`${date}#${hour}`);
   if (!booking) return;
 
-  const mine = booking.name.trim().toLowerCase() === state.name.trim().toLowerCase();
+  const mine = sameName(booking.name, state.name);
   if (!mine && !CFG.allowCancelOthers) {
     setStatus(`That slot belongs to ${booking.name}.`, 'error');
     return;
   }
-  const label = `${td.dataset.date} ${hourLabel(Number(td.dataset.hour))}`;
-  if (!confirm(mine ? `Release your booking on ${label}?` : `Release ${booking.name}'s booking on ${label}?`)) return;
+
+  const block = blockAround(date, hour, booking.name);
+  const whole = block.rows.length > 1;
+  const hours = `${hourLabel(hour)}–${hourLabel(hour + 1)}`;
+
+  const choice = await askRelease({
+    title: mine ? 'Release your booking?' : `Release ${booking.name}'s booking?`,
+    body: whole
+      ? `${longDate(date)}, ${hourLabel(block.lo)}–${hourLabel(block.hi + 1)} — ${block.rows.length} hours.`
+      : `${longDate(date)}, ${hours}.`,
+    blockLabel: whole ? `Release all ${block.rows.length} hours` : 'Release',
+    oneLabel: whole ? `Only ${hours}` : null,
+  });
+
+  if (choice !== 'block' && choice !== 'one') return;
+  const ids = choice === 'block' ? block.rows.map((b) => b.id) : [booking.id];
 
   setStatus('Releasing…');
+  let failure = null;
   try {
-    await store.remove(booking.id);
+    await store.removeMany(ids);
   } catch (err) {
-    setStatus(`Could not release: ${err.message}`, 'error');
+    failure = err;
   }
+
   await reload();
+  if (failure) setStatus(`Could not release: ${failure.message}`, 'error');
 }
 
 /* ---------- interaction ---------- */
@@ -261,15 +368,16 @@ async function cancel(td) {
 function setupInteraction() {
   const grid = document.getElementById('grid');
 
+  // Releasing runs on `click`, not `pointerdown`: opening the dialog under a
+  // finger that is still down would let the same gesture press a button in it.
+  grid.addEventListener('click', (e) => {
+    const td = e.target.closest('td.slot.booked');
+    if (td) cancel(td);
+  });
+
   grid.addEventListener('pointerdown', (e) => {
     const td = e.target.closest('td.slot');
-    if (!td) return;
-
-    if (td.classList.contains('booked')) {
-      cancel(td);
-      return;
-    }
-    if (!td.classList.contains('free')) return;
+    if (!td || !td.classList.contains('free')) return;
 
     const hour = Number(td.dataset.hour);
     state.drag = { date: td.dataset.date, from: hour, to: hour };

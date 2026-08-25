@@ -5,7 +5,7 @@
  *
  *   list(fromDate, toDate) -> [{ id, date, hour, name }]
  *   create(rows)           -> creates bookings, throws Conflict if taken
- *   remove(id)             -> deletes one booking
+ *   removeMany(ids)        -> deletes bookings, in one round trip
  *
  * Dates are ISO strings 'YYYY-MM-DD'; hour is an integer 0-23 meaning the
  * slot hour:00 - (hour+1):00 local time.
@@ -45,8 +45,9 @@ const LocalStore = {
     this._save(all);
   },
 
-  async remove(id) {
-    this._save(this._all().filter((b) => b.id !== id));
+  async removeMany(ids) {
+    const drop = new Set(ids);
+    this._save(this._all().filter((b) => !drop.has(b.id)));
   },
 };
 
@@ -62,7 +63,11 @@ function makeSupabaseStore({ url, anonKey }) {
     const res = await fetch(endpoint + path, { ...options, headers: { ...headers, ...options.headers } });
     if (res.status === 409) throw new Conflict();
     if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-    return res.status === 204 ? null : res.json();
+
+    // A successful insert answers 201 with an empty body and a delete answers
+    // 204, so parse only when there is something to parse.
+    const body = await res.text();
+    return body ? JSON.parse(body) : null;
   }
 
   return {
@@ -76,8 +81,10 @@ function makeSupabaseStore({ url, anonKey }) {
       return call('', { method: 'POST', body: JSON.stringify(rows) });
     },
 
-    remove(id) {
-      return call(`?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE' });
+    removeMany(ids) {
+      // One request for the whole block, so a multi-hour release can't half-fail.
+      const list = ids.map(encodeURIComponent).join(',');
+      return call(`?id=in.(${list})`, { method: 'DELETE' });
     },
   };
 }

@@ -49,8 +49,18 @@
     </main>
 
     <footer class="hints">
-      <p>Click a free slot to book it, or drag down a column to book several hours in a row. Click your own booking to release it.</p>
+      <p>Click a free slot to book it, or drag down a column to book several hours in a row. Click a booking to release it.</p>
     </footer>
+
+    <dialog id="release-dialog" class="modal" aria-labelledby="release-title">
+      <h2 id="release-title">Release booking</h2>
+      <p id="release-body"></p>
+      <div class="modal-actions">
+        <button type="button" id="release-keep" class="ghost">Keep it</button>
+        <button type="button" id="release-one"></button>
+        <button type="button" id="release-block" class="danger"></button>
+      </div>
+    </dialog>
   </div>
 
   <script src="config.js"></script>
