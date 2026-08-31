@@ -16,11 +16,25 @@ GitHub Pages.
 - Bookings live in a Supabase project (`wmiquhcxnicsowbmvfkf`). To publish a
   change: commit, `git push`, and Pages redeploys within a minute or two.
 
+### Keeping Supabase awake
+
 A Supabase project on the free plan **pauses itself after about a week with no
-API requests**. In term time the lab's own bookings keep it awake; over a long
-holiday it may go to sleep, and the calendar will then fail to load until
-someone hits *Restore* in the Supabase dashboard. Nothing is lost when this
-happens.
+API requests**. In term time the lab's own bookings keep it awake; a long
+holiday is the risk. Nothing is lost if it does pause — unpausing is one click
+in the dashboard, within 90 days.
+
+An external scheduler fetches this URL once a day, which counts as activity:
+
+```
+https://wmiquhcxnicsowbmvfkf.supabase.co/rest/v1/bookings?select=id&limit=0&apikey=sb_publishable_DDMuOi2pd8H5811ZJTEITA_8r_TuTGp
+```
+
+`limit=0` is deliberate: the request proves the project is alive without the
+response ever carrying a booking or a name. The key travels in the query string
+because it lets any plain URL monitor do the job with no custom headers.
+
+If the calendar ever fails to load after a quiet spell, check the scheduler
+first — a run of failures there is the early warning.
 
 ## Try it locally
 
