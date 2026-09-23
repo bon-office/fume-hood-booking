@@ -23,7 +23,8 @@ API requests**. In term time the lab's own bookings keep it awake; a long
 holiday is the risk. Nothing is lost if it does pause — unpausing is one click
 in the dashboard, within 90 days.
 
-An external scheduler fetches this URL once a day, which counts as activity:
+An external scheduler (cron-job.org) fetches this URL **once an hour**, which
+counts as activity:
 
 ```
 https://wmiquhcxnicsowbmvfkf.supabase.co/rest/v1/bookings?select=id&limit=0&apikey=sb_publishable_DDMuOi2pd8H5811ZJTEITA_8r_TuTGp
@@ -32,6 +33,12 @@ https://wmiquhcxnicsowbmvfkf.supabase.co/rest/v1/bookings?select=id&limit=0&apik
 `limit=0` is deliberate: the request proves the project is alive without the
 response ever carrying a booking or a name. The key travels in the query string
 because it lets any plain URL monitor do the job with no custom headers.
+
+**Hourly, not daily.** A once-a-day ping was tried first and Supabase still
+sent "scheduled to be paused" warnings; at hourly the warnings stopped. One
+request an hour returning an empty `[]` costs nothing worth counting, so there
+is no reason to trim it back — and the daily experiment says trimming it is
+what causes trouble.
 
 If the calendar ever fails to load after a quiet spell, check the scheduler
 first — a run of failures there is the early warning.
