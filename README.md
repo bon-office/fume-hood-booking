@@ -8,13 +8,25 @@ GitHub Pages.
 
 ## Where it runs
 
-- **Live at** <https://gits-15.sys.kth.se/pages/uvogt/fume-hood-booking/>, served
-  by GitHub Pages on KTH's GitHub Enterprise instance.
-- That instance runs in private mode, so **visitors must be signed in to KTH
-  GitHub** before the page loads at all. Anonymous requests — including requests
-  for `config.js` — are redirected to the KTH login.
-- Bookings live in a Supabase project (`wmiquhcxnicsowbmvfkf`). To publish a
-  change: commit, `git push`, and Pages redeploys within a minute or two.
+- **Live at** <https://bon-office.github.io/fume-hood-booking/>, served by
+  GitHub Pages from the public repo `bon-office/fume-hood-booking`.
+- Anyone with the link can open it; the shared passphrase is the only gate.
+- To publish a change: commit, `git push`, and Pages redeploys within a minute
+  or two.
+
+It was first hosted on KTH's GitHub Enterprise (`gits-15.sys.kth.se`), whose
+private mode kept `config.js` unreadable to outsiders. That had to be abandoned
+because colleagues without an account on that instance could not open the page
+at all. `git remote -v` still lists KTH as `kth`; it is a mirror, not the live
+site.
+
+**The repo is public, so `config.js` is public**, including the Supabase
+publishable key and the hash of the passphrase. The passphrase is long enough
+that its hash is not worth attacking. The key is a deliberate trade: the table's
+policies let anyone holding it read, add and delete bookings, so the realistic
+worst case is somebody meddling with the calendar. Nothing confidential belongs
+in a booking name. Moving the key behind a proxy would need a small server-side
+component, which this deliberately does not have.
 
 ### Keeping Supabase awake
 
