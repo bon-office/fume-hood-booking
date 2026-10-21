@@ -11,6 +11,15 @@ create table if not exists public.bookings (
 
 create index if not exists bookings_date_idx on public.bookings (date);
 
+-- From 30 October 2026 Supabase stops granting Data API access to new tables in
+-- `public` automatically, so say it explicitly. Existing tables keep what they
+-- have; this matters when the project is rebuilt from this file. Without it the
+-- API answers "permission denied" even though the policies below are correct:
+-- grants decide whether the API may touch the table at all, policies decide
+-- which rows it may see.
+grant select, insert, delete on public.bookings to anon, authenticated;
+grant select, insert, update, delete on public.bookings to service_role;
+
 -- The page is a static site, so it talks to the API with the public "anon" key.
 -- These policies deliberately allow anyone holding that key to read, book and
 -- release slots — the shared password in front of the page is the only gate.

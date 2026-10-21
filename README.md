@@ -143,6 +143,12 @@ Double-booking is prevented by the database itself (`unique (date, hour)`), not
 by the browser — so two people clicking the same slot at the same moment can't
 both win.
 
+The schema grants API access to the table explicitly. Supabase used to do that
+automatically for `public`, but stopped for tables created after 30 October
+2026, and a rebuilt project without the grants answers "permission denied"
+however correct its policies are. `scripts/connect-supabase.sh` would catch it:
+it checks the table can actually be read, written and deleted.
+
 ## How secure is this, really?
 
 **It is a doorlock, not security.** Be clear-eyed about it:
